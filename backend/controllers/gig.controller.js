@@ -1,4 +1,5 @@
 import { Gig } from "../models/gig.model.js";
+import { Bid } from "../models/bid.model.js";
 
 export const createGig = async (req, res) => {
     try {
@@ -101,3 +102,42 @@ export const getMyGigs = async (req, res) => {
     }
 }
 
+
+export const deleteGig = async (req, res) => {
+    try {
+        const gigId = req.params.id;
+        const userId = req.id;
+
+        const gig = await Gig.findById(gigId);
+        if (!gig) {
+            return res.status(404).json({
+                message: "Gig not found",
+                success: false
+            })
+        }
+
+        if (gig.ownerId.toString() !== userId) {
+            return res.status(403).json({
+                message: "You can only delete your own gigs",
+                success: false
+            })
+        }
+
+        // Delete all bids associated with this gig
+        await Bid.deleteMany({ gigId });
+
+        // Delete the gig
+        await Gig.findByIdAndDelete(gigId);
+
+        return res.status(200).json({
+            message: "Gig deleted successfully",
+            success: true
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
+        });
+    }
+}

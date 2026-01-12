@@ -9,9 +9,19 @@ import { Button } from './ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
-import { Loader2, ArrowLeft } from 'lucide-react'
+import { Loader2, ArrowLeft, Trash2 } from 'lucide-react'
 import { setMyBids } from '@/redux/bidSlice'
 import useGetMyBids from '@/hooks/useGetMyBids'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 const GigDetails = () => {
     const { id } = useParams();
@@ -29,8 +39,22 @@ const GigDetails = () => {
     const [alreadyBid, setAlreadyBid] = useState(false);
     const [hireConfirmDialogOpen, setHireConfirmDialogOpen] = useState(false);
     const [selectedBidId, setSelectedBidId] = useState(null);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
     useGetMyBids();
+
+    const confirmDelete = async () => {
+        try {
+            const res = await axios.delete(`${GIG_API_END_POINT}/${id}`, { withCredentials: true });
+            if (res.data.success) {
+                toast.success(res.data.message);
+                navigate("/my-gigs");
+            }
+        } catch (error) {
+            console.log(error);
+            toast.error(error.response?.data?.message || "Failed to delete gig");
+        }
+    };
 
     useEffect(() => {
         const fetchGig = async () => {
@@ -203,14 +227,26 @@ const GigDetails = () => {
                 </Button>
                 <div className='border border-gray-200 rounded-lg p-6 mb-6'>
                     <div className='flex items-start justify-between mb-4'>
-                        <div>
-                            <h1 className='text-3xl font-bold mb-2'>{gig.title}</h1>
+                        <div className="w-full">
+                            <div className="flex justify-between items-start w-full">
+                                <h1 className='text-3xl font-bold mb-2'>{gig.title}</h1>
+                                {isOwner && (
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="text-gray-400 hover:text-red-500 hover:bg-red-50"
+                                        onClick={() => setDeleteDialogOpen(true)}
+                                    >
+                                        <Trash2 className="h-5 w-5" />
+                                    </Button>
+                                )}
+                            </div>
                             <p className='text-gray-600 mb-4'>{gig.description}</p>
                             <div className='flex items-center gap-4'>
                                 <span className='text-2xl font-bold text-[#6A38C2]'>${gig.budget}</span>
                                 <span className={`px-3 py-1 rounded-full text-xs font-medium border uppercase tracking-wide ${gig.status === 'open' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-                                            {gig.status}
-                                        </span>
+                                    {gig.status}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -231,11 +267,10 @@ const GigDetails = () => {
                                                 <p className='font-semibold'>{bid.freelancerId?.name || 'Unknown'}</p>
                                                 <p className='text-gray-600 mt-1'>{bid.message}</p>
                                                 <p className='text-lg font-bold text-[#6A38C2] mt-2'>${bid.price}</p>
-                                                <span className={`inline-block mt-2 px-2 py-1 rounded text-xs ${
-                                                    bid.status === 'hired' ? 'bg-green-100 text-green-800' :
+                                                <span className={`inline-block mt-2 px-2 py-1 rounded text-xs ${bid.status === 'hired' ? 'bg-green-100 text-green-800' :
                                                     bid.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                                    'bg-yellow-100 text-yellow-800'
-                                                }`}>
+                                                        'bg-yellow-100 text-yellow-800'
+                                                    }`}>
                                                     {bid.status}
                                                 </span>
                                             </div>
@@ -362,6 +397,24 @@ const GigDetails = () => {
                         </div>
                     </DialogContent>
                 </Dialog>
+
+                <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete your gig
+                                and remove all associated applications/bids.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={confirmDelete} className="bg-red-500 hover:bg-red-600">
+                                Delete
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
         </div>
     )

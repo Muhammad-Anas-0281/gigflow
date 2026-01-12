@@ -5,16 +5,47 @@ import { Button } from './ui/button'
 import { useSelector } from 'react-redux'
 import useGetMyGigs from '@/hooks/useGetMyGigs'
 import { motion } from 'framer-motion'
-import { Bell, Clock3, Plus } from 'lucide-react'
+import { Bell, Clock3, Plus, Trash2 } from 'lucide-react'
 import axios from 'axios'
-import { BID_API_END_POINT } from '@/utils/constant'
+import { BID_API_END_POINT, GIG_API_END_POINT } from '@/utils/constant'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { toast } from 'sonner'
+import { setMyGigs } from '@/redux/gigSlice'
+import { useDispatch } from 'react-redux'
 
 const MyGigs = () => {
     const { myGigs } = useSelector(store => store.gig);
     const { user } = useSelector(store => store.auth);
     const [bidCounts, setBidCounts] = useState({});
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [selectedGigId, setSelectedGigId] = useState(null);
+    const dispatch = useDispatch();
 
     useGetMyGigs();
+
+    const confirmDelete = async () => {
+        try {
+            const res = await axios.delete(`${GIG_API_END_POINT}/${selectedGigId}`, { withCredentials: true });
+            if (res.data.success) {
+                const updatedGigs = myGigs.filter(gig => gig._id !== selectedGigId);
+                dispatch(setMyGigs(updatedGigs));
+                toast.success(res.data.message);
+                setDeleteDialogOpen(false);
+            }
+        } catch (error) {
+            console.log(error);
+            toast.error(error.response?.data?.message || "Failed to delete gig");
+        }
+    };
 
     useEffect(() => {
         const fetchBidCounts = async () => {
@@ -118,6 +149,24 @@ const MyGigs = () => {
                         ))}
                     </div>
                 )}
+
+                <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete your gig
+                                and remove all associated applications/bids.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={confirmDelete} className="bg-red-500 hover:bg-red-600">
+                                Delete
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
         </div>
     )
