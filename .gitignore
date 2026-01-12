@@ -1,6 +1,16 @@
+# Node
 node_modules
+
+# Env files
 .env
-dist
-build
+.env.production
+
+# OS
 .DS_Store
+
+# Test & logs
 coverage
+
+# Frontend build output (generated on Render)
+frontend/dist
+frontend/build
