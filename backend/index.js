@@ -96,19 +96,30 @@ app.get("/health", (req, res) => {
 // Serve static files in production
 if (process.env.NODE_ENV === "production") {
     const __dirname = path.resolve();
-    // Verify that the dist folder exists
     const frontendPath = path.join(__dirname, "frontend", "dist");
 
-    // Check if directory exists before trying to serve it
+    console.log("Production environment detected.");
+    console.log("Serving frontend from:", frontendPath);
+
     if (fs.existsSync(frontendPath)) {
+        console.log("Frontend build directory found.");
         app.use(express.static(frontendPath));
 
         app.get("*", (req, res) => {
-            res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+            const indexPath = path.resolve(__dirname, "frontend", "dist", "index.html");
+            console.log("Serving index.html from:", indexPath);
+            res.sendFile(indexPath);
         });
     } else {
-        console.error("Frontend build not found at:", frontendPath);
+        console.error("CRITICAL: Frontend build not found at:", frontendPath);
+        console.error("Current directory listing:", fs.readdirSync(__dirname));
+        // Fallback to prevent "Cannot GET /" silence
+        app.get("*", (req, res) => {
+            res.status(500).send("Frontend build not found on server. Check logs.");
+        });
     }
+} else {
+    console.log("Development environment detected (or NODE_ENV not set to production).");
 }
 
 httpServer.listen(PORT, () => {
