@@ -1,5 +1,7 @@
 import express from "express";
 import { createServer } from "http";
+import path from "path";
+import fs from "fs";
 import { Server } from "socket.io";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -32,7 +34,7 @@ io.use(async (socket, next) => {
         const token = socket.handshake.headers.cookie?.split('; ')
             .find(row => row.startsWith('token='))
             ?.split('=')[1];
-        
+
         if (!token) {
             return next(new Error("Authentication error"));
         }
@@ -51,10 +53,10 @@ io.use(async (socket, next) => {
 // Socket.io connection handling
 io.on("connection", (socket) => {
     console.log("User connected:", socket.userId);
-    
+
     // Map user ID to socket ID
     userSocketMap[socket.userId] = socket.id;
-    
+
     // Join room for user-specific notifications
     socket.join(socket.userId);
 
@@ -90,6 +92,24 @@ app.use("/api/bids", bidRoute);
 app.get("/health", (req, res) => {
     res.json({ status: "OK", message: "GigFlow API is running" });
 });
+
+// Serve static files in production
+if (process.env.NODE_ENV === "production") {
+    const __dirname = path.resolve();
+    // Verify that the dist folder exists
+    const frontendPath = path.join(__dirname, "frontend", "dist");
+
+    // Check if directory exists before trying to serve it
+    if (fs.existsSync(frontendPath)) {
+        app.use(express.static(frontendPath));
+
+        app.get("*", (req, res) => {
+            res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+        });
+    } else {
+        console.error("Frontend build not found at:", frontendPath);
+    }
+}
 
 httpServer.listen(PORT, () => {
     connectDB();
