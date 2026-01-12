@@ -18,29 +18,31 @@ const App = () => {
   const { user } = useSelector(store => store.auth);
   const { myBids } = useSelector(store => store.bid);
   const dispatch = useDispatch();
-  
+
   useGetCurrentUser();
 
   useEffect(() => {
     if (user) {
       initializeSocket();
       const socket = getSocket();
-      
+
       if (socket) {
-        socket.on("hired", (data) => {
+        const handleHired = (data) => {
           toast.success(data.message || `You have been hired for ${data.gig?.title}!`);
           if (data?.bidId) {
             const updated = myBids.map((b) => b._id === data.bidId ? { ...b, status: 'hired' } : b);
             dispatch(setMyBids(updated));
           }
-        });
+        };
+
+        socket.on("hired", handleHired);
 
         return () => {
-          socket.off("hired");
+          socket.off("hired", handleHired);
         };
       }
     }
-  }, [user]);
+  }, [user, myBids, dispatch]);
 
   const appRouter = createBrowserRouter([
     {
