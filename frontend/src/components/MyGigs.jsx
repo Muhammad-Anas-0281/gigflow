@@ -124,4 +124,3 @@ const MyGigs = () => {
 }
 
 export default MyGigs
-

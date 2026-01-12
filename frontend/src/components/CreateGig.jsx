@@ -43,6 +43,7 @@ const CreateGig = () => {
             });
             if (res.data.success) {
                 toast.success(res.data.message);
+                navigate("/my-gigs");
 
                 // Clear form
                 setInput({
@@ -50,7 +51,7 @@ const CreateGig = () => {
                     description: "",
                     budget: "",
                 });
-                navigate("/my-gigs");
+
             }
         } catch (error) {
             console.log(error);
@@ -79,7 +80,7 @@ const CreateGig = () => {
                 <div className='w-1/2'>
                     <Button
                         variant="ghost"
-                        onClick={() => navigate(-1)}
+                        onClick={() => navigate("/my-gigs")}
                         className="mb-4"
                     >
                         <ArrowLeft className="h-4 w-4 mr-2" />
