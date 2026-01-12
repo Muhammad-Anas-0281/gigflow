@@ -94,11 +94,11 @@ app.get("/health", (req, res) => {
 });
 
 // Serve static files in production
-if (process.env.NODE_ENV === "production") {
-    const __dirname = path.resolve();
-    const frontendPath = path.join(__dirname, "frontend", "dist");
+// Serve static files in production or if build exists
+const __dirname = path.resolve();
+const frontendPath = path.join(__dirname, "frontend", "dist");
 
-    console.log("Production environment detected.");
+if (process.env.NODE_ENV === "production" || fs.existsSync(frontendPath)) {
     console.log("Serving frontend from:", frontendPath);
 
     if (fs.existsSync(frontendPath)) {
@@ -119,7 +119,7 @@ if (process.env.NODE_ENV === "production") {
         });
     }
 } else {
-    console.log("Development environment detected (or NODE_ENV not set to production).");
+    console.log("Development environment detected and no build found. Frontend not served.");
 }
 
 httpServer.listen(PORT, () => {
