@@ -9,7 +9,7 @@ import { AUTH_API_END_POINT } from '@/utils/constant'
 import { toast } from 'sonner'
 import { useDispatch, useSelector } from 'react-redux'
 import { setLoading, setUser } from '@/redux/authSlice'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Eye, EyeOff } from 'lucide-react'
 import { initializeSocket } from '@/utils/socket'
 
 const Login = () => {
@@ -17,6 +17,7 @@ const Login = () => {
         email: "",
         password: "",
     });
+    const [showPassword, setShowPassword] = useState(false);
     const { loading, user } = useSelector(store => store.auth);
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -48,7 +49,7 @@ const Login = () => {
             dispatch(setLoading(false));
         }
     }
-    
+
     useEffect(() => {
         if (user) {
             navigate("/");
@@ -75,14 +76,23 @@ const Login = () => {
 
                     <div className='my-2'>
                         <Label>Password</Label>
-                        <Input
-                            type="password"
-                            value={input.password}
-                            name="password"
-                            onChange={changeEventHandler}
-                            placeholder="Enter your password"
-                            required
-                        />
+                        <div className="relative">
+                            <Input
+                                type={showPassword ? "text" : "password"}
+                                value={input.password}
+                                name="password"
+                                onChange={changeEventHandler}
+                                placeholder="Enter your password"
+                                required
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                            >
+                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                        </div>
                     </div>
                     {
                         loading ? <Button className="w-full my-4" disabled> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Login</Button>

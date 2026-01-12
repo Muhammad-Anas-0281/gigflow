@@ -105,7 +105,7 @@ const MyGigs = () => {
                                     <p className='text-gray-600 mb-3 line-clamp-2'>{gig.description}</p>
                                     <div className='flex items-center justify-between'>
                                         <span className='text-lg font-bold text-[#6A38C2]'>${gig.budget}</span>
-                                        <span className={`px-2 py-1 rounded text-sm ${gig.status === 'open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium border uppercase tracking-wide ${gig.status === 'open' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
                                             {gig.status}
                                         </span>
                                     </div>

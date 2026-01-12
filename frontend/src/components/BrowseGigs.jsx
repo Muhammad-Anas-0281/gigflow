@@ -10,30 +10,47 @@ import { motion } from 'framer-motion'
 import { Clock3, Search } from 'lucide-react'
 
 const GigCard = ({ gig }) => {
+    const { user } = useSelector(store => store.auth);
     const formatTime = (dateString) => {
         if (!dateString) return '';
         return new Date(dateString).toLocaleString();
     };
+
+    const isOwner = user?._id === gig?.ownerId?._id;
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className='border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow'
+            className='border border-gray-200 rounded-lg p-5 hover:shadow-xl transition-all bg-white'
         >
             <Link to={`/gig/${gig._id}`}>
-                <h3 className='text-xl font-semibold mb-2'>{gig.title}</h3>
-                <p className='text-gray-600 mb-3 line-clamp-2'>{gig.description}</p>
-                <div className='flex items-center justify-between'>
-                    <span className='text-lg font-bold text-[#6A38C2]'>${gig.budget}</span>
-                    <span className={`px-2 py-1 rounded text-sm ${gig.status === 'open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                <div className="flex justify-between items-start mb-2">
+                    <h3 className='text-xl font-bold text-gray-900 line-clamp-1'>{gig.title}</h3>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium border uppercase tracking-wide ${gig.status === 'open'
+                            ? 'bg-blue-50 text-blue-700 border-blue-200'
+                            : 'bg-gray-50 text-gray-600 border-gray-200'
+                        }`}>
                         {gig.status}
                     </span>
                 </div>
-                <p className='text-sm text-gray-500 mt-2'>Posted by: {gig.ownerId?.name || 'Unknown'}</p>
-                <div className='flex items-center gap-2 text-sm text-gray-500 mt-1'>
-                    <Clock3 className='h-4 w-4' />
-                    <span>Posted at {formatTime(gig.createdAt)}</span>
+                <p className='text-gray-600 mb-4 line-clamp-2 text-sm leading-relaxed'>{gig.description}</p>
+                <div className='flex items-center justify-between mt-4 pt-4 border-t border-gray-100'>
+                    <div className='flex flex-col'>
+                        <span className='text-xs text-gray-500 uppercase font-semibold'>Budget</span>
+                        <span className='text-lg font-bold text-[#6A38C2]'>${gig.budget}</span>
+                    </div>
+                    <div className='text-right'>
+                        <p className='text-sm text-gray-700 font-medium'>
+                            {gig.ownerId?.name || 'Unknown'}
+                            {isOwner && <span className="text-gray-400 ml-1 italic">(you)</span>}
+                        </p>
+                        <div className='flex items-center gap-1 text-xs text-gray-400 mt-1'>
+                            <Clock3 className='h-3 w-3' />
+                            <span>{Math.floor((new Date() - new Date(gig.createdAt)) / (1000 * 60 * 60 * 24))}d ago</span>
+                        </div>
+                    </div>
                 </div>
             </Link>
         </motion.div>
