@@ -43,8 +43,6 @@ const CreateGig = () => {
             });
             if (res.data.success) {
                 toast.success(res.data.message);
-                navigate("/my-gigs");
-
                 // Clear form
                 setInput({
                     title: "",
